@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=1]
+[gd_scene load_steps=23 format=1]
 
 [ext_resource path="res://scripts/camera.gd" type="Script" id=1]
 [ext_resource path="res://scenes/pipe_spawner.tscn" type="PackedScene" id=2]
@@ -7,11 +7,12 @@
 [ext_resource path="res://scenes/background.tscn" type="PackedScene" id=5]
 [ext_resource path="res://sprites/instructions.png" type="Texture" id=6]
 [ext_resource path="res://sprites/label_game_over.png" type="Texture" id=7]
-[ext_resource path="res://sprites/panel_score.png" type="Texture" id=8]
-[ext_resource path="res://sprites/button_play_normal.png" type="Texture" id=9]
-[ext_resource path="res://sprites/button_play_pressed.png" type="Texture" id=10]
-[ext_resource path="res://sprites/button_score_normal.png" type="Texture" id=11]
-[ext_resource path="res://sprites/button_score_pressed.png" type="Texture" id=12]
+[ext_resource path="res://sprites/button_play_normal.png" type="Texture" id=8]
+[ext_resource path="res://sprites/button_play_pressed.png" type="Texture" id=9]
+[ext_resource path="res://sprites/button_score_normal.png" type="Texture" id=10]
+[ext_resource path="res://sprites/button_score_pressed.png" type="Texture" id=11]
+[ext_resource path="res://sprites/panel_score.png" type="Texture" id=12]
+[ext_resource path="res://sprites/label_new.png" type="Texture" id=13]
 
 [sub_resource type="GDScript" id=1]
 
@@ -21,21 +22,25 @@ script/source = "\nextends TextureButton\n\nfunc _ready():\n\tconnect(\"pressed\
 [sub_resource type="GDScript" id=2]
 
 resource/name = "score_container.gd"
-script/source = "\nextends HBoxContainer\n\nconst number_sprites = [\n\tpreload(\"res://sprites/number_large_0.png\"),\n\tpreload(\"res://sprites/number_large_1.png\"),\n\tpreload(\"res://sprites/number_large_2.png\"),\n\tpreload(\"res://sprites/number_large_3.png\"),\n\tpreload(\"res://sprites/number_large_4.png\"),\n\tpreload(\"res://sprites/number_large_5.png\"),\n\tpreload(\"res://sprites/number_large_6.png\"),\n\tpreload(\"res://sprites/number_large_7.png\"),\n\tpreload(\"res://sprites/number_large_8.png\"),\n\tpreload(\"res://sprites/number_large_9.png\")\n];\n\nfunc _ready():\n\tupdate_score_display(game.current_score);\n\tgame.connect(\"current_score_changed\", self, \"_on_current_score_changed\");\n\t\nfunc _on_current_score_changed():\n\tupdate_score_display(game.current_score);\n\t\nfunc update_score_display(score):\n\tfor child in get_children():\n\t\tchild.queue_free();\n\t\n\tvar string_score = str(score);\n\t\n\tfor i in range(string_score.length()):\n\t\tvar digit = string_score[i].to_int();\n\t\tvar sprite = number_sprites[digit];\n\t\tvar texture_frame = TextureFrame.new();\n\t\ttexture_frame.set_texture(sprite);\n\t\tadd_child(texture_frame);\n\n"
+script/source = "\nextends HBoxContainer\n\nconst number_sprites = [\n\tpreload(\"res://sprites/number_large_0.png\"),\n\tpreload(\"res://sprites/number_large_1.png\"),\n\tpreload(\"res://sprites/number_large_2.png\"),\n\tpreload(\"res://sprites/number_large_3.png\"),\n\tpreload(\"res://sprites/number_large_4.png\"),\n\tpreload(\"res://sprites/number_large_5.png\"),\n\tpreload(\"res://sprites/number_large_6.png\"),\n\tpreload(\"res://sprites/number_large_7.png\"),\n\tpreload(\"res://sprites/number_large_8.png\"),\n\tpreload(\"res://sprites/number_large_9.png\")\n];\n\nfunc _ready():\n\tupdate_score_display(game.current_score);\n\tgame.connect(\"current_score_changed\", self, \"_on_current_score_changed\");\n\t\n\tvar bird = utils.get_main_node().get_node(\"bird\");\n\tif (bird):\n\t\tbird.connect(\"state_changed\", self, \"_on_bird_state_changed\");\n\nfunc _on_bird_state_changed(bird):\n\tif bird.get_state() == bird.GROUNDED_STATE:\n\t\thide();\n\t\nfunc _on_current_score_changed():\n\tupdate_score_display(game.current_score);\n\t\nfunc update_score_display(score):\n\tfor child in get_children():\n\t\tchild.queue_free();\n\t\n\tvar digits = utils.get_digits(score);\n\t\n\tfor digit in digits:\n\t\tvar sprite = number_sprites[digit];\n\t\tvar texture_frame = TextureFrame.new();\n\t\ttexture_frame.set_texture(sprite);\n\t\tadd_child(texture_frame);\n"
 
 [sub_resource type="GDScript" id=3]
 
 resource/name = "game_over_container.gd"
-script/source = "\nextends Container\n\nfunc _ready():\n\tvar bird = utils.get_main_node().get_node(\"bird\");\n\tif bird:\n\t\tbird.connect(\"state_changed\", self, \"_on_bird_state_changed\");\n\t\nfunc _on_bird_state_changed(bird):\n\tif bird.get_state() == bird.GROUNDED_STATE:\n\t\tget_node(\"animation\").play(\"show\");\n\n\n"
+script/source = "\nextends Container\n\nfunc _ready():\n\thide();\n\tvar bird = utils.get_main_node().get_node(\"bird\");\n\tif bird:\n\t\tbird.connect(\"state_changed\", self, \"_on_bird_state_changed\");\n\t\nfunc _on_bird_state_changed(bird):\n\tif bird.get_state() == bird.GROUNDED_STATE:\n\t\tget_node(\"animation\").play(\"show\");\n\n\n"
 
 [sub_resource type="GDScript" id=4]
 
+resource/name = "button_container.gd"
+script/source = "\nextends HBoxContainer\n\nfunc _ready():\n\thide();\n\tvar score_roller = utils.get_main_node().find_node(\"score_roller\");\n\tif score_roller:\n\t\tscore_roller.connect(\"counting_finished\", self, \"show\");\n"
+
+[sub_resource type="GDScript" id=5]
+
 resource/name = "play_button.gd"
-script/source = "\nextends TextureButton\n\nfunc _ready():\n\tconnect(\"pressed\", self, \"_on_pressed\");\n\nfunc _on_pressed():\n\tstage_changer.change(stage_changer.GAME_STAGE);"
+script/source = "\nextends TextureButton\n\nfunc _ready():\n\tconnect(\"pressed\", self, \"_on_pressed\");\n\tvar score_roller = utils.get_main_node().find_node(\"score_roller\");\n\tif score_roller:\n\t\tscore_roller.connect(\"counting_finished\", self, \"grab_focus\");\n\nfunc _on_pressed():\n\tstage_changer.change(stage_changer.GAME_STAGE);"
 
-[sub_resource type="Animation" id=5]
+[sub_resource type="Animation" id=6]
 
-resource/name = "show"
 length = 1.0
 loop = false
 step = 0.1
@@ -59,6 +64,26 @@ tracks/3/path = NodePath("result_box:rect/pos")
 tracks/3/interp = 1
 tracks/3/imported = false
 tracks/3/keys = { "times":FloatArray( 0, 1 ), "transitions":FloatArray( 0.25, 1 ), "update":0, "values":[ Vector2( 15, 270 ), Vector2( 15, 90 ) ] }
+tracks/4/type = "method"
+tracks/4/path = NodePath("result_box/score_roller")
+tracks/4/interp = 1
+tracks/4/imported = false
+tracks/4/keys = { "times":FloatArray( 1 ), "transitions":FloatArray( 1 ), "values":[ { "args":[  ], "method":"count_to_score" } ] }
+
+[sub_resource type="GDScript" id=7]
+
+resource/name = "score_roller.gd"
+script/source = "\nextends HBoxContainer\n\nconst LERP_DURATION = 0.5;\n\nconst number_sprites = [\n\tpreload(\"res://sprites/number_middle_0.png\"),\n\tpreload(\"res://sprites/number_middle_1.png\"),\n\tpreload(\"res://sprites/number_middle_2.png\"),\n\tpreload(\"res://sprites/number_middle_3.png\"),\n\tpreload(\"res://sprites/number_middle_4.png\"),\n\tpreload(\"res://sprites/number_middle_5.png\"),\n\tpreload(\"res://sprites/number_middle_6.png\"),\n\tpreload(\"res://sprites/number_middle_7.png\"),\n\tpreload(\"res://sprites/number_middle_8.png\"),\n\tpreload(\"res://sprites/number_middle_9.png\")\n];\n\nsignal counting_finished;\n\nvar lerp_time = 0;\n\nfunc _ready():\n\tupdate_score_display(0);\n\nfunc _process(delta):\n\tif (lerp_time == LERP_DURATION):\n\t\tset_process(false);\n\t\tgame.best_score = game.current_score;\n\t\temit_signal(\"counting_finished\");\n\t\treturn;\n\n\tlerp_time = min(lerp_time + delta, LERP_DURATION);\n\tvar percent = lerp_time / LERP_DURATION;\n\tvar value = int(lerp(0, game.current_score, percent));\n\tupdate_score_display(value);\n\nfunc count_to_score():\n\tset_process(true);\n\nfunc update_score_display(score):\n\tfor child in get_children():\n\t\tchild.queue_free();\n\t\n\tvar digits = utils.get_digits(score);\n\tfor digit in digits:\n\t\tvar sprite = number_sprites[digit];\n\t\tvar texture_frame = TextureFrame.new();\n\t\ttexture_frame.set_texture(sprite);\n\t\tadd_child(texture_frame);\n"
+
+[sub_resource type="GDScript" id=8]
+
+resource/name = "best_score_box.gd"
+script/source = "\nextends HBoxContainer\n\nconst LERP_DURATION = 0.5;\n\nconst number_sprites = [\n\tpreload(\"res://sprites/number_middle_0.png\"),\n\tpreload(\"res://sprites/number_middle_1.png\"),\n\tpreload(\"res://sprites/number_middle_2.png\"),\n\tpreload(\"res://sprites/number_middle_3.png\"),\n\tpreload(\"res://sprites/number_middle_4.png\"),\n\tpreload(\"res://sprites/number_middle_5.png\"),\n\tpreload(\"res://sprites/number_middle_6.png\"),\n\tpreload(\"res://sprites/number_middle_7.png\"),\n\tpreload(\"res://sprites/number_middle_8.png\"),\n\tpreload(\"res://sprites/number_middle_9.png\")\n];\n\nfunc _ready():\n\tupdate_score_display(game.best_score);\n\tgame.connect(\"best_score_changed\", self, \"_on_best_score_changed\");\n\nfunc _on_best_score_changed():\n\tupdate_score_display(game.best_score);\n\nfunc update_score_display(score):\n\tfor child in get_children():\n\t\tchild.queue_free();\n\t\n\tvar digits = utils.get_digits(score);\n\tfor digit in digits:\n\t\tvar sprite = number_sprites[digit];\n\t\tvar texture_frame = TextureFrame.new();\n\t\ttexture_frame.set_texture(sprite);\n\t\tadd_child(texture_frame);\n"
+
+[sub_resource type="GDScript" id=9]
+
+resource/name = "new_best_marker.gd"
+script/source = "\nextends TextureFrame\n\nfunc _ready():\n\thide();\n\tgame.connect(\"best_score_changed\", self, \"show\");\n\n\n"
 
 [node name="Node" type="Node"]
 
@@ -145,7 +170,6 @@ script/script = SubResource( 2 )
 
 [node name="game_over_container" type="Container" parent="hud"]
 
-visibility/visible = false
 focus/ignore_mouse = false
 focus/stop_mouse = true
 size_flags/horizontal = 2
@@ -169,21 +193,9 @@ margin/bottom = 76.0
 texture = ExtResource( 7 )
 stretch_mode = 0
 
-[node name="result_box" type="TextureFrame" parent="hud/game_over_container"]
-
-focus/ignore_mouse = true
-focus/stop_mouse = true
-size_flags/horizontal = 2
-size_flags/vertical = 2
-margin/left = 15.0
-margin/top = 90.0
-margin/right = 128.0
-margin/bottom = 147.0
-texture = ExtResource( 8 )
-stretch_mode = 0
-
 [node name="button_container" type="HBoxContainer" parent="hud/game_over_container"]
 
+editor/display_folded = true
 focus/ignore_mouse = false
 focus/stop_mouse = false
 size_flags/horizontal = 2
@@ -194,6 +206,7 @@ margin/right = 129.0
 margin/bottom = 189.0
 custom_constants/separation = 10
 alignment = 1
+script/script = SubResource( 4 )
 
 [node name="play_button" type="TextureButton" parent="hud/game_over_container/button_container"]
 
@@ -208,9 +221,9 @@ margin/bottom = 29.0
 toggle_mode = false
 enabled_focus_mode = 2
 shortcut = null
-textures/normal = ExtResource( 9 )
-textures/pressed = ExtResource( 10 )
-script/script = SubResource( 4 )
+textures/normal = ExtResource( 8 )
+textures/pressed = ExtResource( 9 )
+script/script = SubResource( 5 )
 
 [node name="hi_scores_button" type="TextureButton" parent="hud/game_over_container/button_container"]
 
@@ -225,18 +238,75 @@ margin/bottom = 29.0
 toggle_mode = false
 enabled_focus_mode = 2
 shortcut = null
-textures/normal = ExtResource( 11 )
-textures/pressed = ExtResource( 12 )
+textures/normal = ExtResource( 10 )
+textures/pressed = ExtResource( 11 )
 
 [node name="animation" type="AnimationPlayer" parent="hud/game_over_container"]
 
 playback/process_mode = 1
 playback/default_blend_time = 0.0
 root/root = NodePath("..")
-anims/show = SubResource( 5 )
+anims/show = SubResource( 6 )
 playback/active = true
 playback/speed = 1.5
 blend_times = [  ]
 autoplay = ""
+
+[node name="result_box" type="TextureFrame" parent="hud/game_over_container"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 139.0
+margin/top = 160.0
+margin/right = 252.0
+margin/bottom = 217.0
+texture = ExtResource( 12 )
+stretch_mode = 0
+
+[node name="score_roller" type="HBoxContainer" parent="hud/game_over_container/result_box"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = false
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 49.0
+margin/top = 16.0
+margin/right = 103.0
+margin/bottom = 26.0
+custom_constants/separation = 2
+alignment = 2
+script/script = SubResource( 7 )
+__meta__ = { "_edit_group_":true }
+
+[node name="best_score_box" type="HBoxContainer" parent="hud/game_over_container/result_box"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = false
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 49.0
+margin/top = 37.0
+margin/right = 103.0
+margin/bottom = 47.0
+custom_constants/separation = 2
+alignment = 2
+script/script = SubResource( 8 )
+__meta__ = { "_edit_group_":true }
+
+[node name="new_best_marker" type="TextureFrame" parent="hud/game_over_container/result_box"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 66.0
+margin/top = 29.0
+margin/right = 82.0
+margin/bottom = 36.0
+texture = ExtResource( 13 )
+stretch_mode = 0
+script/script = SubResource( 9 )
 
 

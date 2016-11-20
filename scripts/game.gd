@@ -22,5 +22,6 @@ func _on_current_score_changed(value):
 	emit_signal("current_score_changed");
 	
 func _on_best_score_changed(value):
-	best_score = value;
-	emit_signal("best_score_changed");
+	if value > best_score:
+		best_score = value;
+		emit_signal("best_score_changed");
